@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-// using Microsoft.EntityFrameworkCore;
-// using ProjectName.Models;
+using ProjectName.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace ProjectName
 {
@@ -14,7 +15,26 @@ namespace ProjectName
 
       builder.Services.AddControllersWithViews();
 
-      // builder.Services.AddDbContext<ProjectNameContext>(dbContextOptions => dbContextOptions.UseMySql(builder.Configuration["ConnectionStrings:DefaultConnection"], ServerVersion.AutoDetect(builder.Configuration["ConnectionStrings:DefaultConnection"])));
+      builder.Services.AddDbContext<ProjectNameContext>(
+                        dbContextOptions => dbContextOptions
+                          .UseMySql(
+                            builder.Configuration["ConnectionStrings:DefaultConnection"], ServerVersion.AutoDetect(builder.Configuration["ConnectionStrings:DefaultConnection"]
+                          )
+                        )
+                      );
+
+      builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<ProjectNameContext>().AddDefaultTokenProviders();
+
+        //settings for development environment-----------------------------------------------vv
+      builder.Services.Configure<IdentityOptions>(options =>
+      {
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequiredLength = 0;
+        options.Password.RequiredUniqueChars = 0;
+      });
 
       WebApplication app = builder.Build();
 
@@ -23,6 +43,9 @@ namespace ProjectName
       app.UseStaticFiles();
 
       app.UseRouting();
+
+      app.UseAuthentication();
+      app.UseAuthorization();
 
       app.MapControllerRoute(
           name: "default",
